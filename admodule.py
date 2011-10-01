@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 '''
-Copyright (C) 2010 Sebastian Cabrera
-<scabrera@astaro.com> 
+Copyright (C) 2011 Sebastian Cabrera
+<scabrera-github@portachtzig.de> 
 '''
 
 import ldap

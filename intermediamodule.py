@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 '''
 Copyright (C) 2010 Sebastian Cabrera
-<scabrera@astaro.com>
+<scabrera-github@portachtzig.de>
 '''
 
 import urllib, urllib2

@@ -14,7 +14,7 @@
 # Lesser General Public License for more details.
 #
 # MODIFIED IT ORIGINAL: http://odin.himinbi.org/MultipartPostHandler.py
-# MODIFIED BY Sebastian Cabrera
+# MODIFIED BY Sebastian Cabrera <scabrera-github@portachtzig.de>
 """
 Usage:
   Enables the use of multipart/form-data for posting forms

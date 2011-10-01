@@ -1,7 +1,7 @@
 #. -*- coding: UTF- -*-
 '''
 Copyright (C) 2010 Sebastian Cabrera
-<Sebastian.Cabrera@sophos.com>
+<scabrera-github@portachtzig.de>
 '''
 
 from ConfigParser import RawConfigParser

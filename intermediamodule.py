@@ -511,11 +511,11 @@ def changeMailboxGeneral(accountname, changesdict): # {{{
     if debug:
         __writeDebug(debuglog, 'joined changeMailboxGeneral function in intermediamodule with accountname ' + accountname + ' and changesdict ' + str(changesdict))
 
-        # urlencode the changesdict
-        intermedia_changes = urllib.urlencode(changesdict)
+    # urlencode the changesdict
+    intermedia_changes = urllib.urlencode(changesdict)
 
-        # get intermedia connector
-        intermedia_connector = __login_multipart(accountname)
+    # get intermedia connector
+    intermedia_connector = __login_multipart(accountname)
 
     try:
         intermedia_connect = intermedia_connector.open("https://%s/asp/User/MSExchange/EditMailbox/General.asp?action=saveChanges&" % (configdict[accountname]["MANAGERURL"]), intermedia_changes)

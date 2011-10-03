@@ -481,6 +481,8 @@ def changeMailboxGeneral(accountname, changesdict): # {{{
     changesdict: a dict containing the changes
     needed values:
                   -> identity: sAMAccountName of the user object
+    valid values:
+                  -> password: Password of the Mailbox
                   -> title: Job Title of the User object
                   -> company: Company the user is working in
                   -> department: Department of the user
@@ -527,6 +529,16 @@ def changeMailboxGeneral(accountname, changesdict): # {{{
         __handleError('changeMailboxGeneral', e)
     if debug:
         __writeDebug(debuglog, 'left changeMailboxGeneral function in intermediamodule with accountname ' + accountname)
+# }}}
+
+def changeMailboxPassword(accountname, username, password): # {{{
+    """helper function to change the password of a mailbox.
+    The request is just forwarded to changeMailboxGeneral.
+    accountname: name of the IntermediaAccount to use (configfile)
+    username: sAMAccountName of the Mailbox we need to change the Password for
+    password: the actual password
+    """
+    changeMailboxGeneral(accountname,{ 'identity' : username, 'password' : password })
 # }}}
 
 def addMailboxEmailAddresses(accountname, changesdict): # {{{

@@ -403,7 +403,7 @@ def createGroup(accountname, groupdict): # {{{
         __writeDebug(debuglog, 'left createGroup function in intermediamodule with accountname ' + accountname)
 # }}}
 
-def changeMailboxAdvanced(accountname, changesdict): # {{{
+def changeUserAdvanced(accountname, changesdict): # {{{
     """address Changes to the "Advanced" tab of the Mailbox in Hostpilot
     accountname: Accountname used for the connection
     changesdict: Dictionary containing the changes
@@ -443,7 +443,7 @@ def changeMailboxAdvanced(accountname, changesdict): # {{{
         __writeDebug(debuglog, 'left changeMailboxAdvanced function in intermediamodule with accountname ' + accountname)
 # }}}
 
-def changeMailboxDeliveryOptions(accountname, changesdict): # {{{
+def changeUserDeliveryOptions(accountname, changesdict): # {{{
     """address changes to the "Delivery Options" tab of the Mailbox
     accountname: Accountname of the intermedia Account to use
     changesdict: a dict containing the changes
@@ -475,7 +475,7 @@ def changeMailboxDeliveryOptions(accountname, changesdict): # {{{
         __writeDebug(debuglog, 'left changeMailboxDeliveryOptions function in intermediamodule with accountname ' + accountname)
 # }}}
 
-def changeMailboxGeneral(accountname, changesdict): # {{{
+def changeUserGeneral(accountname, changesdict): # {{{
     """address Changes to the "General" tab of the Mailbox in Hostpilot
     accountname: Accountname of the Intermedia Account to use
     changesdict: a dict containing the changes
@@ -531,7 +531,7 @@ def changeMailboxGeneral(accountname, changesdict): # {{{
         __writeDebug(debuglog, 'left changeMailboxGeneral function in intermediamodule with accountname ' + accountname)
 # }}}
 
-def changeMailboxPassword(accountname, username, password): # {{{
+def changeUserPassword(accountname, username, password): # {{{
     """helper function to change the password of a mailbox.
     The request is just forwarded to changeMailboxGeneral.
     accountname: name of the IntermediaAccount to use (configfile)
@@ -541,7 +541,7 @@ def changeMailboxPassword(accountname, username, password): # {{{
     changeMailboxGeneral(accountname,{ 'identity' : username, 'password' : password })
 # }}}
 
-def addMailboxEmailAddresses(accountname, changesdict): # {{{
+def addUserEmailAddresses(accountname, changesdict): # {{{
     """add adresses to mailboxes
     accountname: name of the IntermediaAccount to use (configfile)
     changesdict: a dict containing the changes
@@ -579,7 +579,7 @@ def addMailboxEmailAddresses(accountname, changesdict): # {{{
         __writeDebug(debuglog, 'left addMailboxEmailAddress function in intermediamodule with accountname ' + accountname)
 # }}}
 
-def delMailboxEmailAddresses(accountname, changesdict): # {{{
+def delUserEmailAddresses(accountname, changesdict): # {{{
     """remove adresses from mailboxes
     accountname: Name of the IntermediaAccount to use (configfile)
     changesdict: the Dict containing the changes
@@ -616,7 +616,7 @@ def delMailboxEmailAddresses(accountname, changesdict): # {{{
         __writeDebug(debuglog, 'left dellMailboxEmailAddress function in intermediamodule with accountname ' + accountname)
 # }}}
 
-def deleteMailbox(accountname, username): # {{{
+def deleteUser(accountname, username): # {{{
     """delete Mailboxes from your Account
     accountname: Accountname to establish the connectoin
     username: sAMAccountName of the User you want to delete
@@ -675,7 +675,7 @@ def deleteContact(accountname, contact): # {{{
         __writeDebug(debuglog, 'left deleteContact function in intermediamodule with accountname ' + accountname)
 # }}}
 
-def deleteMailinglist(accountname, mailinglist): # {{{
+def deleteGroup(accountname, mailinglist): # {{{
     """delete Mailinglists from your Account
     accountname: Accountname for the connection as in the configfile
     mailinglist: sAMAccountName of the Mailinglist to delete
@@ -704,7 +704,7 @@ def deleteMailinglist(accountname, mailinglist): # {{{
         __writeDebug(debuglog, 'left deleteMailinglist function in intermediamodule with accountname ' + accountname)
 # }}}
 
-def changeMailinglistGeneral(accountname, changesdict): # {{{
+def changeGroupGeneral(accountname, changesdict): # {{{
     """do the changes in the "General" tab of the Group
     accountname: Accountname we need to use for connection
     changesdict: Dictionary with the Changes for the Mailinglist (group object)
@@ -738,7 +738,7 @@ def changeMailinglistGeneral(accountname, changesdict): # {{{
         __writeDebug(debuglog, 'left changeMailinglistGeneral function in intermediamodule with accountname ' + accountname)
 # }}}
 
-def addMailinglistEmailAddresses(accountname, changesdict): # {{{
+def addGroupEmailAddresses(accountname, changesdict): # {{{
     """add Emailaddresses to a Mailinglist (group object)
     accountname: The Accountname to get the connection
     changesdict: Dictionary with the changes
@@ -776,7 +776,7 @@ def addMailinglistEmailAddresses(accountname, changesdict): # {{{
         __writeDebug(debuglog, 'left addMailinglistEmailAdresses function in intermediamodule with accountname ' + accountname)
 # }}}
 
-def delMailinglistEmailAddresses(accountname, changesdict): # {{{
+def delGroupEmailAddresses(accountname, changesdict): # {{{
     """remove Emailaddresses from a Mailinglist (group object)
     accountname: The Accountname to establish the connection
     changesdict: Dictionary with the changes
@@ -813,7 +813,7 @@ def delMailinglistEmailAddresses(accountname, changesdict): # {{{
         __writeDebug(debuglog, 'left dellMailinglistEmailAddress function in intermediamodule with accountname ' + accountname)
 # }}}
 
-def createMailboxBackup(accountname, mailboxdict): # {{{
+def createUserBackup(accountname, mailboxdict): # {{{
     """create a PST file for a given Mailboxe
     accountname: The Accountname we need to use here
     mailboxdict: Dictionary of Values we need for backing up

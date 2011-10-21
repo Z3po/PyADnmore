@@ -43,6 +43,8 @@ def __handleError(function, Error): # {{{
 
 def __ldap_connect(adname): # {{{
 
+    adname = 'AD_' + adname
+
     if debug:
         __writeDebug(debuglog, 'joined __ldap_connect function with adname ' + adname)
 
@@ -58,7 +60,7 @@ def __ldap_connect(adname): # {{{
     else:
         if debug:
             __writeDebug(debuglog, 'seems we successfully connected to ' + adname)
-        return lobject
+        return lobject, configdict[adname]["BASE"]
 
 # }}}
 
@@ -137,23 +139,50 @@ def windowsTOunixtime(time): # {{{
     return timestamp
 # }}}
 
+def addObjectToGroup(adname, objectdn, groupdn): # {{{
+    """add an Object to the given groupDN
+    adname: name of the AD we use
+    objectdn: DN of the group or userobject we want to add to the group
+    groupdn: the DN of the group
+    """
+    groupmembers = getGroups(adname, groupdn)[0][1]['member']
+    if objectdn in groupmembers:
+        __handleError('addUserToGroup', objectdn + 'is already member of ' + groupdn)
+    groupmembers.append(objectdn)
+    changesdict = { 'member' : groupmembers }
+    modifyObject(adname, groupdn, changesdict)
+# }}}
+
+def delObjectFromGroup(adname, objectdn, groupdn): # {{{
+    """remove an Object from the given groupDN
+    adname: name of the AD we use
+    objectdn: DN of the group or userobject we want to remove from the group
+    groupdn: the DN of the group
+    """
+    groupmembers = getGroups(adname, groupdn)[0][1]['member']
+    if objectdn not in groupmembers:
+        __handleError('addUserToGroup', objectdn + 'is no member of ' + groupdn)
+    groupmembers.remove(objectdn)
+    changesdict = { 'member' : groupmembers }
+    modifyObject(adname, groupdn, changesdict)
+# }}}
+
 def getEntryByAttribute(adname, lookupstring): # {{{
     """get Entries from AD by its attributes
     adname: we need the name of the AD to use
     lookupstring: ldap Filter String
     returned: unsorted  list of results from AD
     """
-    adname = 'AD_' + adname
     result = []
 
     if debug:
         __writeDebug(debuglog, 'joined getEntryByAttribute function in admodule with adname ' + adname + ' and lookupstring ' + str(lookupstring))
 
-    lobject = __ldap_connect(adname)
+    lobject, searchbase = __ldap_connect(adname)
 
     try:
         # get all matching objects
-        result = lobject.search_s(configdict[adname]["BASE"],ldap.SCOPE_SUBTREE,lookupstring)
+        result = lobject.search_s(searchbase,ldap.SCOPE_SUBTREE,lookupstring)
         # unbind from ad
         lobject.unbind_s()
     # unless exception is raised
@@ -179,8 +208,6 @@ def getUsers(adname, username): # {{{
     returned: List of Users sorted by sAMAccountName
     NOTE: username can be: sAMAccountName, name, givenName, sn, distinguishedName, mail, userPrincipalName
     """
-    adname = 'AD_' + adname
-
     result = ''
     _itemdict = {}
     _counter = 0
@@ -188,11 +215,11 @@ def getUsers(adname, username): # {{{
     if debug:
         __writeDebug(debuglog, 'joined getUsers in admodule with adname ' + adname + ' and username ' + username)
 
-    lobject = __ldap_connect(adname)
+    lobject, searchbase = __ldap_connect(adname)
 
     try:
         # get all matching users
-        result = lobject.search_s(configdict[adname]["BASE"],ldap.SCOPE_SUBTREE,'(|(&(sAMAccountName=%s)(objectCategory=person)(objectClass=user))(&(name=%s)(objectCategory=person)(objectClass=user))(&(givenName=%s)(objectCategory=person)(objectClass=user))(&(sn=%s)(objectCategory=person)(objectClass=user))(&(distinguishedName=%s)(objectCategory=person)(objectClass=user))(&(mail=%s)(objectCategory=person)(objectClass=user))(&(userPrincipalName=%s)(objectCategory=person)(objectClass=user)))' % (username, username, username, username, username, username, username))
+        result = lobject.search_s(searchbase,ldap.SCOPE_SUBTREE,'(|(&(sAMAccountName=%s)(objectCategory=person)(objectClass=user))(&(name=%s)(objectCategory=person)(objectClass=user))(&(givenName=%s)(objectCategory=person)(objectClass=user))(&(sn=%s)(objectCategory=person)(objectClass=user))(&(distinguishedName=%s)(objectCategory=person)(objectClass=user))(&(mail=%s)(objectCategory=person)(objectClass=user))(&(userPrincipalName=%s)(objectCategory=person)(objectClass=user)))' % (username, username, username, username, username, username, username))
         # unbind from ad
         lobject.unbind_s()
     # unless exception is raised
@@ -226,19 +253,17 @@ def getGroups(adname, groupname): # {{{
     returned: List of Groups sorted by sAMAccountName
     NOTE: groupname can be: sAMAccountName, name, distinguishedName
     """
-    adname = 'AD_' + adname
-
     _itemdict = {}
     _counter = 0
     _tempresult = []
     if debug:
         __writeDebug(debuglog, 'joined getGroups function in admodule with adname ' + adname + ' and groupname ' + groupname)
 
-    lobject = __ldap_connect(adname)
+    lobject, searchbase = __ldap_connect(adname)
 
     try:
         # get all matching gruops
-        result = lobject.search_s(configdict[adname]["BASE"],ldap.SCOPE_SUBTREE,'(|(&(objectCategory=group)(sAMAccountName=%s))(&(objectCategory=group)(name=%s))(&(objectCategory=group)(distinguishedName=%s)))' % (groupname, groupname, groupname))
+        result = lobject.search_s(searchbase,ldap.SCOPE_SUBTREE,'(|(&(objectCategory=group)(sAMAccountName=%s))(&(objectCategory=group)(name=%s))(&(objectCategory=group)(distinguishedName=%s)))' % (groupname, groupname, groupname))
         # unbind from AD
         lobject.unbind_s()
     # unless exception is raised
@@ -271,19 +296,17 @@ def getContacts(adname, contact): # {{{
     returned: List of Groups sorted by sAMAccountName
     NOTE: contact can be any of: name, displayName, distinguishedName, email
     """
-    adname = 'AD_' + adname
-
     _itemdict = {}
     _counter = 0
     _tempresult = []
     if debug:
         __writeDebug(debuglog, 'joined getContacts function in admodule with adname ' + adname + ' and contact ' + contact)
 
-    lobject = __ldap_connect(adname)
+    lobject, searchbase = __ldap_connect(adname)
 
     try:
         # get all matching gruops
-        result = lobject.search_s(configdict[adname]["BASE"],ldap.SCOPE_SUBTREE,'(|(&(objectClass=contact)(objectCategory=person)(name=%s))(&(objectClass=contact)(objectCategory=person)(displayName=%s))(&(objectClass=contact)(objectCategory=person)(distinguishedName=%s))(&(objectClass=contact)(objectCategory=person)(targetAddress=SMTP:%s)))' % (contact, contact, contact, contact))
+        result = lobject.search_s(searchbase,ldap.SCOPE_SUBTREE,'(|(&(objectClass=contact)(objectCategory=person)(name=%s))(&(objectClass=contact)(objectCategory=person)(displayName=%s))(&(objectClass=contact)(objectCategory=person)(distinguishedName=%s))(&(objectClass=contact)(objectCategory=person)(targetAddress=SMTP:%s)))' % (contact, contact, contact, contact))
         # unbind from AD
         lobject.unbind_s()
     # unless exception is raised
@@ -316,8 +339,6 @@ def createUser(adname, dn, userdict): # {{{
     userdict: dictionary with values to set
     NOTE: needed attributes are: displayName, givenName, name, sn, sAMAccountName, userPrincipalName, objectClass
     """
-    adname = 'AD_' + adname
-
     _neededAttributes = ( 'displayName', 'givenName', 'name', 'sn', 'sAMAccountName', 'userPrincipalName', 'pwdLastSet', 'objectClass' )
     _user = []
     if debug:
@@ -337,7 +358,7 @@ def createUser(adname, dn, userdict): # {{{
             _user.append((attname, userdict[attname]))
 
     # here happens the magic
-    lobject = __ldap_connect(adname)
+    lobject, searchbase = __ldap_connect(adname)
 
     try:
         # add user to AD
@@ -350,17 +371,18 @@ def createUser(adname, dn, userdict): # {{{
         __writeDebug(debuglog, 'left createUser function in admodule with adname ' + adname)
 # }}}
 
+def createGroup(adname, dn, groupdict):
+    pass
+
 def deleteObject(adname, dn): # {{{
     """delete a User from Active Directory
     adname: we need the name of the AD here too
     dn: DN of the object we need to delete
     """
-    adname = 'AD_' + adname
-
     if debug:
         __writeDebug(debuglog, 'joined deleteObject function in admodule with adname ' + adname + ' and dn ' + dn)
 
-    lobject = __ldap_connect(adname)
+    lobject, searchbase = __ldap_connect(adname)
 
     try:
         # add user to AD
@@ -380,8 +402,6 @@ def modifyObject(adname, dn, moddict): # {{{
     moddict: dictionary of object attributes to change
     NOTE: you can add just changed attributes here, no value to delete the attribute
     """
-    adname = 'AD_' + adname
-
     _modattrs = []
     if debug:
         __writeDebug(debuglog, 'joined modifyObject function in admodule with adname ' + adname + ',dn ' + dn + ' and moddict ' + str(moddict))
@@ -398,7 +418,7 @@ def modifyObject(adname, dn, moddict): # {{{
         else:
             _modattrs.append((ldap.MOD_DELETE, attname, None))
     # here happens the magic
-    lobject = __ldap_connect(adname)
+    lobject, searchbase = __ldap_connect(adname)
     try:
         # modify AD dn object
         lobject.modify_s(dn,_modattrs)
@@ -416,12 +436,10 @@ def changePassword(adname, dn, password): # {{{
     dn: dn of the user
     password: the new password value
     """
-    adname = 'AD_' + adname
-
     if debug:
         __writeDebug(debuglog, 'joined changePassword function in admodule with adname ' + adname + ',dn ' + dn + ' and a secret password :)')
 
-    lobject = __ldap_connect(adname)
+    lobject, searchbase = __ldap_connect(adname)
 
     try:
         # !! got this snippet from: http://snipt.net/Fotinakis/tag/active%20directory
@@ -470,20 +488,20 @@ def generatePassword(keylength=None): # {{{
     _upperkeys = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     _lowerkeys = 'abcdefghijklmnopqrstuvwxyz'
     _digits = '1234567890'
-    _result=""
+    result=""
     if not ( keylength > 0 ):
         keylength = 10
     for i in range(keylength):
-        _result += choice(choice(_specialchars) + choice(_upperkeys) + choice(_lowerkeys) + choice(_digits))
-    for char in _result:
+        result += choice(choice(_specialchars) + choice(_upperkeys) + choice(_lowerkeys) + choice(_digits))
+    for char in result:
         if _specialchars.find(char) > 0:
-            for char in _result:
+            for char in result:
                 if _upperkeys.find(char) > 0:
-                    for char in _result:
+                    for char in result:
                         if _lowerkeys.find(char) > 0:
-                            for char in _result:
+                            for char in result:
                                 if _digits.find(char) > 0:
-                                    return _result
+                                    return result
                                     break
     __writeDebug(debuglog, 'left generatePassword function in admodule with a password')
     return generatePassword(keylength)

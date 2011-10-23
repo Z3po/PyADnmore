@@ -38,7 +38,7 @@ def __handleError(function, Error): # {{{
         print 'BIND user or password is wrong'
     else:
         print 'ERROR in ' + function + ': ' + str(Error)
-    __exit(2)
+#    __exit(2)
 # }}}
 
 def __ldap_connect(adname): # {{{
@@ -337,9 +337,10 @@ def createUser(adname, dn, userdict): # {{{
     adname: we need the name of the AD here too
     dn: DN path of the new user
     userdict: dictionary with values to set
-    NOTE: needed attributes are: displayName, givenName, name, sn, sAMAccountName, userPrincipalName, objectClass
+    -> needed userdict-Attributes are: displayName, givenName, name, sn, sAMAccountName, userPrincipalName
+    -> valid userdict-Attributes are: pwdLastSet
     """
-    _neededAttributes = ( 'displayName', 'givenName', 'name', 'sn', 'sAMAccountName', 'userPrincipalName', 'pwdLastSet', 'objectClass' )
+    _neededAttributes = ( 'displayName', 'givenName', 'name', 'sn', 'sAMAccountName', 'userPrincipalName', 'pwdLastSet' )
     _user = []
     if debug:
         __writeDebug(debuglog, 'joined createUser function in admodule with adname ' + adname + ', dn ' + dn + ' and userdict ' + str(userdict))
@@ -348,14 +349,17 @@ def createUser(adname, dn, userdict): # {{{
     for _attribute in _neededAttributes:
         if _attribute in userdict:
             _user.append((_attribute, userdict[_attribute]))
+            del userdict[_attribute]
         else:
             if _attribute == 'pwdLastSet':
-                _user.append(_attribute, '0')
+                _user.append((_attribute, '0'))
             else:
                 __handleError('createUser', 'MISSING attribute ' + _attribute)
 
-        for attname in userdict:
-            _user.append((attname, userdict[attname]))
+    _user.append(('objectClass', ( "top", "person", "organizationalPerson", "user" )))
+
+    for attname in userdict:
+        _user.append((attname, userdict[attname]))
 
     # here happens the magic
     lobject, searchbase = __ldap_connect(adname)
@@ -371,8 +375,52 @@ def createUser(adname, dn, userdict): # {{{
         __writeDebug(debuglog, 'left createUser function in admodule with adname ' + adname)
 # }}}
 
-def createGroup(adname, dn, groupdict):
-    pass
+def createGroup(adname, dn, groupdict): # {{{
+    """add a Group to Active Directory
+    adname: we need the name of the AD here too
+    dn: DN path of the new group
+    groupdict: dictionary with values to set
+    -> needed groupdict-Attributes are: sAMAccountName, groupType
+    --> groupTypes:
+    # -2147483646 ~ Global Security Group   # -2147483644 ~ Local Security Group
+    # -2147483643 ~ BuiltIn Group           # -2147483640 ~ Universal Security Group
+    # 2 ~ Global Distribution Group         # 4 ~ Local Distribution Group
+    # 8 ~ Universal Distribution Group
+    -> valid groupdict-Attributes are: name, displayName, member, mail
+    """
+    _neededAttributes = ( 'sAMAccountName', 'groupType' )
+    _group = []
+    if debug:
+        __writeDebug(debuglog, 'joined createGroup function in admodule with adname ' + adname + ', dn ' + dn + ' and groupdict ' + str(groupdict))
+
+    # create list out of user dictionary
+    for _attribute in _neededAttributes:
+        if _attribute in groupdict:
+            _group.append((_attribute, groupdict[_attribute]))
+            del groupdict[_attribute]
+        else:
+            __handleError('createGroup', 'MISSING attribute ' + _attribute)
+
+    _group.append(('objectClass', ( "top", "group" )))
+
+    for attname in groupdict:
+        _group.append((attname, groupdict[attname]))
+
+    # here happens the magic
+    lobject, searchbase = __ldap_connect(adname)
+
+    try:
+        print str(_group)
+        print dn
+        # add user to AD
+        lobject.add_s(dn,_group)
+        # unbind from AD
+        lobject.unbind_s()
+    except Exception, e:
+        __handleError('createGroup', e.args[0]["desc"])
+    if debug:
+        __writeDebug(debuglog, 'left createGroup function in admodule with adname ' + adname)
+# }}}
 
 def deleteObject(adname, dn): # {{{
     """delete a User from Active Directory

@@ -712,13 +712,13 @@ def changeGroupGeneral(accountname, changesdict): # {{{
                       -> identity: sAMAccountName of the group object
     valid values are:
                       -> member: a list of Members of the group object
-                                 these must be DNs seperated by \r\n
+                                 these must be DNs seperated by \\r\\n
                       -> displayName: change the displayName of the group object
     """
     accountname = 'IM_' + accountname
 
     if debug:
-        __writeDebug(debuglog, 'joined changeMailinglistGeneral function in intermediamodule with accountname ' + accountname + ' and changesdict ' + str(changesdict))
+        __writeDebug(debuglog, 'joined changeGroupGeneral function in intermediamodule with accountname ' + accountname + ' and changesdict ' + str(changesdict))
 
     # urlencode the changes
     intermedia_changes = urllib.urlencode(changesdict)
@@ -731,11 +731,11 @@ def changeGroupGeneral(accountname, changesdict): # {{{
         if re.findall(r"were successfully saved",intermedia_connect.read()):
             pass
         else:
-            __handleError('changeMailinglistGeneral', 'Could not apply changes')
+            __handleError('changeGroupGeneral', 'Could not apply changes')
     except Exception, e:
-        __handleError('changeMailinglistGeneral', e)
+        __handleError('changeGroupGeneral', e)
     if debug:
-        __writeDebug(debuglog, 'left changeMailinglistGeneral function in intermediamodule with accountname ' + accountname)
+        __writeDebug(debuglog, 'left changeGroupGeneral function in intermediamodule with accountname ' + accountname)
 # }}}
 
 def addGroupEmailAddresses(accountname, changesdict): # {{{

@@ -38,7 +38,7 @@ def __handleError(function, Error): # {{{
         print 'BIND user or password is wrong'
     else:
         print 'ERROR in ' + function + ': ' + str(Error)
-#    __exit(2)
+    __exit(2)
 # }}}
 
 def __ldap_connect(adname): # {{{
@@ -113,7 +113,7 @@ def getuserAccountControl(value): # {{{
     return _result
 # }}}
 
-def windowsTOunixtime(time): # {{{
+def windowsTOdatetime(time): # {{{
     """
     get real time out of windowstime
     time: windows timestamp from attribute
@@ -140,7 +140,7 @@ def windowsTOunixtime(time): # {{{
 # }}}
 
 def addObjectToGroup(adname, objectdn, groupdn): # {{{
-    """add an Object to the given groupDN
+    """add an Object (group, contact, user) to the given groupDN
     adname: name of the AD we use
     objectdn: DN of the group or userobject we want to add to the group
     groupdn: the DN of the group
@@ -154,7 +154,7 @@ def addObjectToGroup(adname, objectdn, groupdn): # {{{
 # }}}
 
 def delObjectFromGroup(adname, objectdn, groupdn): # {{{
-    """remove an Object from the given groupDN
+    """remove an Object (group, contact, user) from the given groupDN
     adname: name of the AD we use
     objectdn: DN of the group or userobject we want to remove from the group
     groupdn: the DN of the group
@@ -401,17 +401,16 @@ def createGroup(adname, dn, groupdict): # {{{
         else:
             __handleError('createGroup', 'MISSING attribute ' + _attribute)
 
-    _group.append(('objectClass', ( "top", "group" )))
-
     for attname in groupdict:
         _group.append((attname, groupdict[attname]))
+
+    _group.append(('objectClass', ( "top", "group" )))
+
 
     # here happens the magic
     lobject, searchbase = __ldap_connect(adname)
 
     try:
-        print str(_group)
-        print dn
         # add user to AD
         lobject.add_s(dn,_group)
         # unbind from AD
@@ -420,6 +419,40 @@ def createGroup(adname, dn, groupdict): # {{{
         __handleError('createGroup', e.args[0]["desc"])
     if debug:
         __writeDebug(debuglog, 'left createGroup function in admodule with adname ' + adname)
+# }}}
+
+def createContact(adname, dn, contactdict): # {{{
+    """add a Contact to Active Directory
+    adname: we need the name of the AD here too
+    dn: DN path of the new contact
+    contactdict: dictionary with values to set
+    -> valid contactdict-Attributes are: mailNickname, mail, targetAddress, company, displayName, name, proxyAddresses, showInAddressBook, internetEncoding
+    Note: There are no attributes needed to create the object at all
+    """
+
+    _contact = []
+    if debug:
+        __writeDebug(debuglog, 'joined createContact function in admodule with adname ' + adname + ', dn ' + dn + ' and contactdict ' + str(contactdict))
+
+    # create list out of user dictionary
+    for attname in contactdict:
+        _contact.append((attname, contactdict[attname]))
+
+    _contact.append(('objectClass', ( "top", "person", 'organizationalPerson', 'contact' )))
+
+    # here happens the magic
+    lobject, searchbase = __ldap_connect(adname)
+
+    try:
+        # add user to AD
+        lobject.add_s(dn,_contact)
+        # unbind from AD
+        lobject.unbind_s()
+    except Exception, e:
+        __handleError('createContact', e.args[0]["desc"])
+    if debug:
+        __writeDebug(debuglog, 'left createContact function in admodule with adname ' + adname)
+
 # }}}
 
 def deleteObject(adname, dn): # {{{
@@ -478,16 +511,15 @@ def modifyObject(adname, dn, moddict): # {{{
         __writeDebug(debuglog, 'left modifyObject function in admodule with adname ' + adname)
 # }}}
 
-def changePassword(adname, dn, password): # {{{
+def changePassword(adname, dn, password, passwordchange=False): # {{{
     """Change Password of AD user
     adname: the name of the AD to use
     dn: dn of the user
     password: the new password value
+    passwordchange: 'True' if the password should be changed on next login (optional)
     """
     if debug:
         __writeDebug(debuglog, 'joined changePassword function in admodule with adname ' + adname + ',dn ' + dn + ' and a secret password :)')
-
-    lobject, searchbase = __ldap_connect(adname)
 
     try:
         # !! got this snippet from: http://snipt.net/Fotinakis/tag/active%20directory
@@ -513,12 +545,12 @@ def changePassword(adname, dn, password): # {{{
 
         # For some reason, two MOD_REPLACE calls are necessary to change the password.
         # If only one call is performed, both the old and new password will work.
-        ## could not reproduce it...i just got one working password. Nevertheless didn't change the original script.
-        _modattrs = [( ldap.MOD_REPLACE, 'unicodePwd', new_password),( ldap.MOD_REPLACE, 'unicodePwd', new_password)]
+        ## could not reproduce it...i just got one working password. Nevertheless didn't change the original behaviour.
+        moddict = { 'unicodePwd' : new_password, 'unicodePwd' : new_password }
         # modify the dn object
-        lobject.modify_s(dn, _modattrs)
-        # unbind from ad
-        lobject.unbind_s()
+        modifyObject(adname, dn, moddict)
+        if passwordchange:
+            modifyObject(adname, dn, { 'pwdLastSet' : '0' })
     except Exception, e:
         __handleError('changePassword', e.args[0]["desc"])
     if debug:

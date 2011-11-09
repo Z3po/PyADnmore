@@ -145,7 +145,10 @@ def addObjectToGroup(adname, objectdn, groupdn): # {{{
     objectdn: DN of the group or userobject we want to add to the group
     groupdn: the DN of the group
     """
-    groupmembers = getGroups(adname, groupdn)[0][1]['member']
+    if 'member' in getGroups(adname, groupdn)[0][1]:
+        groupmembers = getGroups(adname, groupdn)[0][1]['member']
+    else:
+        groupmembers = []
     if objectdn in groupmembers:
         __handleError('addUserToGroup', objectdn + 'is already member of ' + groupdn)
     groupmembers.append(objectdn)

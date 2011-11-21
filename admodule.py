@@ -14,8 +14,8 @@ debug = config.debug
 debuglog = config.debuglog
 configdict = config.configobject
 
-# writes Debuglog
 def __writeDebug(logfile, logline): # {{{
+    '''Used for debug logging'''
     if logfile == 'stdout':
         print logline
     else:
@@ -25,8 +25,8 @@ def __writeDebug(logfile, logline): # {{{
         debfile.close()
 # }}}
 
-# function to handle all Errors
 def __handleError(function, Error): # {{{
+    '''Handles the Errors raised'''
     if debug:
         __writeDebug(debuglog, 'joined handleError function in admodule with function ' + function + ' and Error ' + str(Error))
     if str(Error) == 'Server is unwilling to perform':
@@ -42,6 +42,7 @@ def __handleError(function, Error): # {{{
 # }}}
 
 def __ldap_connect(adname): # {{{
+    '''Connects via LDAP to you AD Controller'''
 
     adname = 'AD_' + adname
 

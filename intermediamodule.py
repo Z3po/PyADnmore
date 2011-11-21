@@ -426,7 +426,7 @@ def changeUserAdvanced(accountname, changesdict): # {{{
     accountname = 'IM_' + accountname
 
     if debug:
-        __writeDebug(debuglog, 'joined changeMailboxAdvanced function in intermediamodule with accountname ' + accountname + ' and changesdict ' + str(changesdict))
+        __writeDebug(debuglog, 'joined changeUserAdvanced function in intermediamodule with accountname ' + accountname + ' and changesdict ' + str(changesdict))
 
     # urlencode the dict
     intermedia_changes = urllib.urlencode(changesdict)
@@ -438,9 +438,9 @@ def changeUserAdvanced(accountname, changesdict): # {{{
     if re.findall(r"were successfully saved",intermedia_connect.read()):
         pass
     else:
-        __handleError('changeMailboxAdvanced', 'Could not apply changes')
+        __handleError('changeUserAdvanced', 'Could not apply changes')
     if debug:
-        __writeDebug(debuglog, 'left changeMailboxAdvanced function in intermediamodule with accountname ' + accountname)
+        __writeDebug(debuglog, 'left changeUserAdvanced function in intermediamodule with accountname ' + accountname)
 # }}}
 
 def changeUserDeliveryOptions(accountname, changesdict): # {{{
@@ -458,7 +458,7 @@ def changeUserDeliveryOptions(accountname, changesdict): # {{{
     accountname = 'IM_' + accountname
 
     if debug:
-        __writeDebug(debuglog, 'joined changeMailboxDeliveryOptions function in intermediamodule with accountname ' + accountname + ' and changesdict ' + str(changesdict))
+        __writeDebug(debuglog, 'joined changeUserDeliveryOptions function in intermediamodule with accountname ' + accountname + ' and changesdict ' + str(changesdict))
 
     # urlencode the changes dict
     intermedia_changes = urllib.urlencode(changesdict)
@@ -470,9 +470,9 @@ def changeUserDeliveryOptions(accountname, changesdict): # {{{
     if not re.findall(r"Cannot save delivery restrictions of mailbox",intermedia_connect.read()):
         pass
     else:
-        __handleError('changeMailboxDeliveryOptions', 'Could not apply changes')
+        __handleError('changeUserDeliveryOptions', 'Could not apply changes')
     if debug:
-        __writeDebug(debuglog, 'left changeMailboxDeliveryOptions function in intermediamodule with accountname ' + accountname)
+        __writeDebug(debuglog, 'left changeUserDeliveryOptions function in intermediamodule with accountname ' + accountname)
 # }}}
 
 def changeUserGeneral(accountname, changesdict): # {{{
@@ -511,7 +511,7 @@ def changeUserGeneral(accountname, changesdict): # {{{
     accountname = 'IM_' + accountname
 
     if debug:
-        __writeDebug(debuglog, 'joined changeMailboxGeneral function in intermediamodule with accountname ' + accountname + ' and changesdict ' + str(changesdict))
+        __writeDebug(debuglog, 'joined changeUserGeneral function in intermediamodule with accountname ' + accountname + ' and changesdict ' + str(changesdict))
 
     # urlencode the changesdict
     intermedia_changes = urllib.urlencode(changesdict)
@@ -524,21 +524,21 @@ def changeUserGeneral(accountname, changesdict): # {{{
         if re.findall(r"were successfully saved",intermedia_connect.read()):
             pass
         else:
-            __handleError('changeMailboxGeneral', 'Could not apply changes')
+            __handleError('changeUserGeneral', 'Could not apply changes')
     except Exception, e:
-        __handleError('changeMailboxGeneral', e)
+        __handleError('changeUserGeneral', e)
     if debug:
-        __writeDebug(debuglog, 'left changeMailboxGeneral function in intermediamodule with accountname ' + accountname)
+        __writeDebug(debuglog, 'left changeUserGeneral function in intermediamodule with accountname ' + accountname)
 # }}}
 
 def changeUserPassword(accountname, username, password): # {{{
     """helper function to change the password of a mailbox.
-    The request is just forwarded to changeMailboxGeneral.
+    The request is just forwarded to changeUserGeneral.
     accountname: name of the IntermediaAccount to use (configfile)
     username: sAMAccountName of the Mailbox we need to change the Password for
     password: the actual password
     """
-    changeMailboxGeneral(accountname,{ 'identity' : username, 'password' : password })
+    changeUserGeneral(accountname,{ 'identity' : username, 'password' : password })
 # }}}
 
 def addUserEmailAddresses(accountname, changesdict): # {{{

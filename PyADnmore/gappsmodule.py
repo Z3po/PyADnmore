@@ -342,6 +342,14 @@ def createUser(gappsname, _userdict): # {{{
     """add a User to Gapps
     name: we need the name of the Gapps Account here too
     userdict: dictionary with values to set
+    Needed values: 
+                    -> user_name: Username of the google apps user
+                    -> family_name: Surname of the user
+                    -> given_name: Given Name of the user
+                    -> password: Password of the user
+    valid values:
+                    -> quota_limit: Quota Limit of the users mailbox
+                    -> suspended: Create the user suspended
     """
     gappsname = 'GAPPS_' + gappsname
 
@@ -350,13 +358,13 @@ def createUser(gappsname, _userdict): # {{{
         __writeDebug(debuglog, 'joined createUser function with gappsname ' + gappsname + ' and _userdict ' + str(_userdict))
 
     if 'user_name' not in _userdict:
-        __handleError('createUser', 'MISSING ARGUMENT user_name or sAMAccountName')
+        __handleError('createUser', 'MISSING ARGUMENT user_name')
 
     if 'family_name' not in _userdict:
-        __handleError('createUser', 'MISSING ARGUMENT family_name or sn')
+        __handleError('createUser', 'MISSING ARGUMENT family_name')
 
     if 'given_name' not in _userdict:
-        __handleError('createUser', 'MISSING ARGUMENT given_name or givenName')
+        __handleError('createUser', 'MISSING ARGUMENT given_name')
 
     if 'password' in _userdict:
         _userdict.update({ 'password' : _userdict["password"] })

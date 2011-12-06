@@ -813,8 +813,50 @@ def delGroupEmailAddresses(accountname, changesdict): # {{{
         __writeDebug(debuglog, 'left dellMailinglistEmailAddress function in intermediamodule with accountname ' + accountname)
 # }}}
 
+def addObjectToGroup(accountname, objectdn, groupname): # {{{
+    """add a Object to a given Group
+    accountname: The Accountname we need to use
+    objectdn: DistinguishedName of the Object we want to add
+    groupname: sAMAccountName of the group we want to add to
+    """
+    group = getGroups(accountname, groupname)
+    if len(group) == 1:
+        members=''
+        membersnow=group[0][1]['member']
+        if objectdn in membersnow:
+            __handleError('addObjectToGroup',objectdn + ' is already part of group ' + groupname)
+        else:
+            membersnow.append(objectdn)
+            members='\\r\\n'.join(membersnow)
+            members=re.sub('\'','\\\'',members)
+            changeGroupGeneral(accountname,{ 'identity' : groupname, 'member' : members })
+    else:
+        __handleError('addObjectToGroup','no or more than one matching group found')
+# }}}
+
+def delObjectFromGroup(accountname, objectdn, groupname): # {{{
+    """delete a Object from a given Group
+    accountname: The Accountname we need to use
+    objectdn: DistinguishedName of the Object we want to remove
+    groupname: sAMAccountName of the group we want to remove the object from
+    """
+    group = getGroups(accountname, groupname)
+    if len(group) == 1:
+        members=''
+        membersnow=group[0][1]['member']
+        if objectdn in membersnow:
+            membersnow.remove(objectdn)
+            members='\\r\\n'.join(membersnow)
+            members=re.sub('\'','\\\'',members)
+            changeGroupGeneral(accountname,{ 'identity' : groupname, 'member' : members })
+        else:
+            __handleError('delObjectFromGroup',objectdn + ' is not poart of group ' + groupname)
+    else:
+        __handleError('addObjectToGroup','no or more than one matching group found')
+# }}}
+
 def createUserBackup(accountname, mailboxdict): # {{{
-    """create a PST file for a given Mailboxe
+    """create a PST file for a given Mailbox
     accountname: The Accountname we need to use here
     mailboxdict: Dictionary of Values we need for backing up
     needed values:
